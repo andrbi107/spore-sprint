@@ -1,0 +1,14 @@
+{
+  "name": "Spore Sprint",
+  "short_name": "Spore Sprint",
+  "description": "A mushroom-forest vertical climber — hop the moss, collect glowing spores, dodge rot caps.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "background_color": "#0d1f12",
+  "theme_color": "#0d1f12",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

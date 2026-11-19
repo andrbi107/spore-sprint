@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0d1f12">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg">
+<title>Spore Sprint</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <canvas id="game"></canvas>
+
+    <div id="hud">
+      <div id="lives" aria-label="Lives remaining"></div>
+      <div id="alt-wrap"><span id="altitude">0m</span></div>
+      <div id="score-wrap">
+        <div id="score">0</div>
+        <div id="best-wrap">Best <span id="best">0</span></div>
+      </div>
+      <button id="btn-pause" aria-label="Pause" title="Pause">
+        <svg viewBox="0 0 24 24"><rect x="7" y="5" width="3.5" height="14" rx="1"/><rect x="13.5" y="5" width="3.5" height="14" rx="1"/></svg>
+      </button>
+    </div>
+
+    <div id="touch-controls">
+      <button id="btn-left" aria-label="Move left">&#9664;</button>
+      <button id="btn-right" aria-label="Move right">&#9654;</button>
+    </div>
+
+    <div id="screen-start" class="screen show">
+      <h1>Spore Sprint</h1>
+      <p class="tagline">Hop the moss, chase the glow, dodge the rot.</p>
+      <button id="btn-play" class="big-btn">Play</button>
+      <p class="best-line">Best <span id="start-best">0</span></p>
+      <p class="hint">Arrows / A&amp;D or drag to steer &middot; Esc to pause</p>
+    </div>
+
+    <div id="screen-pause" class="screen">
+      <h2>Paused</h2>
+      <button id="btn-resume" class="big-btn">Resume</button>
+      <button id="btn-pause-home" class="link-btn">Home</button>
+    </div>
+
+    <div id="screen-over" class="screen">
+      <h2>Game Over</h2>
+      <div class="stats">
+        <div>Score <b id="final-score">0</b></div>
+        <div>Altitude <b id="final-alt">0m</b></div>
+        <div>Best <b id="final-best">0</b></div>
+      </div>
+      <button id="btn-retry" class="big-btn">Retry</button>
+      <button id="btn-home" class="link-btn">Home</button>
+    </div>
+  </div>
+
+  <script src="main.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('sw.js').catch(function () {});
+      });
+    }
+  </script>
+</body>
+</html>
