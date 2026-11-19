@@ -18,6 +18,7 @@ const MAX_VX       = 6.8;
 const ACCEL_KEY    = 0.85;   // keyboard acceleration per frame
 const ACCEL_TOUCH  = 0.95;   // drag / touch acceleration
 const FRICTION     = 0.86;
+const FRICTION_ICY = 0.985;   // v0.0.2 — ice platform friction (slippery)
 const PLAYER_W     = 32;
 const PLAYER_H     = 36;
 const PLATFORM_H   = 14;
@@ -40,7 +41,7 @@ let rotSpawnTimer = 0;
 let highestPY = 0;              // smallest world y among platforms (highest)
 let lastT = 0;
 
-let player = { x: 0, y: 0, vx: 0, vy: 0, w: PLAYER_W, h: PLAYER_H, anim: 0, facing: 1, squash: 0 };
+let player = { x: 0, y: 0, vx: 0, vy: 0, w: PLAYER_W, h: PLAYER_H, anim: 0, facing: 1, squash: 0, iceT: 0 };
 let platforms = [];
 let spores = [];
 let rots = [];
@@ -132,6 +133,7 @@ function pickType() {
   if (r < 0.10 + altF * 0.05) return 'spring';
   if (r < 0.23 + altF * 0.08) return 'crumbly';
   if (r < 0.37 + altF * 0.10) return 'moving';
+  if (r < 0.52 + altF * 0.12) return 'ice';   // v0.0.2 — slippery ice
   return 'normal';
 }
 function makePlatform(x, y, w, type) {
@@ -231,8 +233,10 @@ function updatePlayer(dt) {
       player.facing = diff > 0 ? 1 : -1;
     }
   }
-  const fric = Math.pow(FRICTION, dt);
+  const onIce = player.iceT > 0;                       // v0.0.2 — ice slipperiness
+  const fric = Math.pow(onIce ? FRICTION_ICY : FRICTION, dt);
   player.vx *= fric;
+  if (onIce) player.iceT -= dt;
   const maxv = MAX_VX * (boost > 0 ? 1.45 : 1);
   player.vx = clamp(player.vx, -maxv, maxv);
   player.x += player.vx * dt;
@@ -264,6 +268,8 @@ function updatePlayer(dt) {
           player.vy = -JUMP_V;
         }
         player.squash = 1;
+        player.iceT = (p.type === 'ice') ? 0.7 : 0;   // v0.0.2 — ice slipperiness window
+        if (window.MUX) MUX.bump();
         if (p.type === 'crumbly') {
           p.broken = true;
           p.breakT = 0;
@@ -358,6 +364,7 @@ function loseLife() {
 
 function gameOver() {
   state = 'over';
+  if (window.MUX) MUX.over();
   if (score > best) {
     best = score;
     try { localStorage.setItem(BEST_KEY, String(best)); } catch (e) {}
@@ -455,7 +462,8 @@ function drawPlatform(p) {
 
   const fill = p.type === 'spring' ? '#3f6f2c' :
                p.type === 'crumbly' ? '#566434' :
-               p.type === 'moving' ? '#2f6a4a' : '#4a7a34';
+               p.type === 'moving' ? '#2f6a4a' :
+               p.type === 'ice' ? '#6fa8c8' : '#4a7a34';   // v0.0.2 — ice (icy blue)
   const edge = p.type === 'crumbly' ? '#2a321a' : '#21361a';
   const r = 7;
   ctx.fillStyle = fill;
@@ -704,7 +712,7 @@ function startGame() {
   player.x = W / 2 - player.w / 2;
   player.y = H - 110;
   startPlayerY = player.y;
-  player.vx = 0; player.vy = -JUMP_V; player.facing = 1; player.squash = 0;
+  player.vx = 0; player.vy = -JUMP_V; player.facing = 1; player.squash = 0; player.iceT = 0;
   camY = player.y - H * 0.45;
   const baseP = makePlatform(W / 2 - 45, player.y + player.h + 6, 90, 'normal');
   platforms.push(baseP);

@@ -2,10 +2,18 @@
 
 > یک platformer عمودی auto-hop در جنگل قارچ در غروب — فیزیک پرش خودکار، collision یک‌طرفه، دوربین scroll.
 
-[![Version](https://img.shields.io/badge/version-v0.0.1-blue)](https://github.com/andrbi107/spore-sprint/releases/tag/v0.0.1) [![PWA](https://img.shields.io/badge/PWA-installable-purple)](https://andrbi107.github.io/spore-sprint/) [![No deps](https://img.shields.io/badge/dependencies-none-success)](https://github.com/andrbi107/spore-sprint) [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
+[![Version](https://img.shields.io/badge/version-v0.0.2-blue)](https://github.com/andrbi107/spore-sprint/releases/tag/v0.0.2) [![PWA](https://img.shields.io/badge/PWA-installable-purple)](https://andrbi107.github.io/spore-sprint/) [![No deps](https://img.shields.io/badge/dependencies-none-success)](https://github.com/andrbi107/spore-sprint) [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
 
 🎮 **[بازی کن](https://andrbi107.github.io/spore-sprint/)** — نسخه‌ی آنلاین روی GitHub Pages
-📦 **[مخزن گیت‌هاب](https://github.com/andrbi107/spore-sprint)** · 🏷️ **[Release v0.0.1](https://github.com/andrbi107/spore-sprint/releases/tag/v0.0.1)**
+📦 **[مخزن گیت‌هاب](https://github.com/andrbi107/spore-sprint)** · 🏷️ **[Release v0.0.2](https://github.com/andrbi107/spore-sprint/releases/tag/v0.0.2)**
+
+---
+
+## تغییرات v0.0.2 (جدید)
+
+**Spore Sprint** — ice platform: نوع جدید پلتفرم یخی (آبی‌رنگ) با اصطکاک بسیار پایین؛ پس از پرش از آن، حرکت افقی کندتر اصطلاک می‌کند (لغزنده). haptic روی bounce/game-over.
+
+**همه‌ی بازی‌ها** — `mobile-ux.js` مشترک (haptics/install prompt/version stamp) + cache sw.js به v2.
 
 ---
 
