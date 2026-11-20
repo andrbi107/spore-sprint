@@ -28,6 +28,10 @@ const STREAK_GOAL  = 5;
 const BOOST_FRAMES = 90;     // ~1.5s speed boost
 const INVULN_FRAMES = 90;
 const START_LIVES  = 3;
+const JETPACK_FRAMES = 180;  // v0.0.5 — 3s jetpack thrust
+const JETPACK_THRUST = 0.85; // v0.0.5 — upward accel/frame (beats GRAVITY 0.5)
+const JETPACK_VMAX = 22;     // v0.0.5 — cap upward velocity while jetpacking
+const JETPACK_CHANCE = 0.05; // v0.0.5 — rare: ~5% of platforms carry a jetpack
 
 /* ---- State ---- */
 let state = 'start';            // start | playing | paused | over
@@ -40,6 +44,8 @@ let startPlayerY = 0;
 let rotSpawnTimer = 0;
 let highestPY = 0;              // smallest world y among platforms (highest)
 let lastT = 0;
+let jetpackTimer = 0;           // v0.0.5 — frames of jetpack thrust remaining
+let milestonesHit = {};         // v0.0.5 — one-shot altitude achievements
 
 let player = { x: 0, y: 0, vx: 0, vy: 0, w: PLAYER_W, h: PLAYER_H, anim: 0, facing: 1, squash: 0, iceT: 0 };
 let platforms = [];
@@ -48,6 +54,7 @@ let rots = [];
 let particles = [];
 let fireflies = [];
 let trees = [];
+let jetpacks = [];              // v0.0.5 — floating jetpack powerup pickups
 
 const keys = {};
 const input = { touchDir: 0, targetX: null, pointerActive: false };
@@ -159,6 +166,9 @@ function ensurePlatforms() {
       spores.push({ x: px + pw / 2 + (Math.random() - 0.5) * 18, y: ny - 24 - Math.random() * 14,
                     r: 6, phase: Math.random() * Math.PI * 2, collected: false, missed: false });
     }
+    if (Math.random() < JETPACK_CHANCE) {           // v0.0.5 — rare jetpack pickup above platform
+      jetpacks.push({ x: px + pw / 2, y: ny - 30, r: 11, collected: false, phase: Math.random() * Math.PI * 2 });
+    }
     highestPY = ny;
   }
   const cullY = camY + H + 90;
@@ -168,6 +178,7 @@ function ensurePlatforms() {
   }
   platforms = platforms.filter(function (p) { return p.y < cullY && !(p.broken && p.breakT > 32); });
   spores = spores.filter(function (s) { return !s.collected && s.y < cullY; });
+  jetpacks = jetpacks.filter(function (j) { return !j.collected && j.y < cullY; });  // v0.0.5
 }
 
 function updateRots(dt) {
@@ -253,6 +264,10 @@ function updatePlayer(dt) {
 
   /* vertical */
   player.vy += GRAVITY * dt;
+  if (jetpackTimer > 0) {                       // v0.0.5 — jetpack upward thrust
+    player.vy -= JETPACK_THRUST * dt;
+    if (player.vy < -JETPACK_VMAX) player.vy = -JETPACK_VMAX;
+  }
   if (player.vy > 17) player.vy = 17;
   const prevBottom = player.y + player.h;
   player.y += player.vy * dt;
@@ -331,6 +346,21 @@ function updatePlayer(dt) {
       } else {
         spawnParticles(s.x, s.y, '#ffe080', 6);
       }
+    }
+  }
+
+  /* jetpack pickup collection (v0.0.5) */
+  for (let i = 0; i < jetpacks.length; i++) {
+    const j = jetpacks[i];
+    if (j.collected) continue;
+    const dx = (player.x + player.w / 2) - j.x;
+    const dy = (player.y + player.h / 2) - j.y;
+    const rad = j.r + 18;
+    if (dx * dx + dy * dy < rad * rad) {
+      j.collected = true;
+      jetpackTimer = JETPACK_FRAMES;
+      spawnParticles(j.x, j.y, '#ff8c1a', 16);
+      if (window.MUX) MUX.bump();
     }
   }
 
@@ -656,25 +686,93 @@ function drawParticles() {
   ctx.globalAlpha = 1;
 }
 
+function drawJetpack(j) {                        // v0.0.5 — floating rocket powerup
+  const sy = j.y - camY;
+  if (sy < -30 || sy > H + 30) return;
+  j.phase += 0.08;
+  const bob = Math.sin(j.phase) * 2;
+  const cx = j.x, cy = sy + bob;
+  ctx.save();
+  ctx.shadowColor = '#ff8c1a';
+  ctx.shadowBlur = 14;
+  /* body */
+  ctx.fillStyle = '#ff8c1a';
+  roundRect(cx - 6, cy - 8, 12, 16, 3); ctx.fill();
+  /* strap band */
+  ctx.fillStyle = '#ffd24a';
+  ctx.fillRect(cx - 7, cy - 4, 14, 2);
+  /* nozzle */
+  ctx.fillStyle = '#7a3a10';
+  ctx.fillRect(cx - 4, cy + 6, 8, 3);
+  /* flame */
+  ctx.shadowBlur = 8;
+  ctx.fillStyle = '#ffe040';
+  const flick = 4 + Math.random() * 4;
+  ctx.beginPath();
+  ctx.moveTo(cx - 4, cy + 9);
+  ctx.lineTo(cx + 4, cy + 9);
+  ctx.lineTo(cx, cy + 9 + flick);
+  ctx.closePath(); ctx.fill();
+  ctx.restore();
+}
+
+function drawJetpackHud() {                      // v0.0.5 — small jetpack timer bar
+  if (jetpackTimer <= 0) return;
+  const bw = 130, bh = 8;
+  const bx = (W - bw) / 2;
+  const by = 14;
+  ctx.save();
+  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  ctx.fillRect(bx - 3, by - 3, bw + 6, bh + 6);
+  ctx.fillStyle = '#ff8c1a';
+  ctx.fillRect(bx, by, (jetpackTimer / JETPACK_FRAMES) * bw, bh);
+  ctx.fillStyle = 'rgba(255,255,255,0.9)';
+  ctx.font = '600 11px system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText('JETPACK ' + (jetpackTimer / 60).toFixed(1) + 's', W / 2, by + bh + 14);
+  ctx.restore();
+}
+
 function render() {
   drawBackground();
-  if (state === 'start') return;
+  if (state === 'start') { drawJetpackHud(); return; }
   for (let i = 0; i < platforms.length; i++) drawPlatform(platforms[i]);
   for (let i = 0; i < spores.length; i++) drawSpore(spores[i]);
+  for (let i = 0; i < jetpacks.length; i++) drawJetpack(jetpacks[i]);  // v0.0.5
   for (let i = 0; i < rots.length; i++) drawRot(rots[i]);
   drawPlayer();
   drawParticles();
+  drawJetpackHud();                              // v0.0.5 — steady timer bar on top
 }
 
 /* ---- Update ---- */
 function update(dt) {
   if (invuln > 0) invuln -= dt;
   if (boost > 0) boost -= dt;
+  if (jetpackTimer > 0) jetpackTimer -= dt;     // v0.0.5 — jetpack countdown
   updatePlayer(dt);
   ensurePlatforms();
   updateRots(dt);
   updateParticles(dt);
+  checkMilestones();                             // v0.0.5 — altitude achievements
   updateHud();
+}
+
+/* ---- Height milestones (v0.0.5) ---- */
+function checkMilestones() {
+  if (maxClimb >= 2000 && !milestonesHit.h2k) {
+    milestonesHit.h2k = true;
+    if (window.GK) GK.achievement('h2k', 'Climber', 'Reach 2000');
+  }
+  if (maxClimb >= 5000 && !milestonesHit.h5k) {
+    milestonesHit.h5k = true;
+    if (window.GK) GK.achievement('h5k', 'Skywalker', 'Reach 5000');
+  }
+  if (maxClimb >= 10000 && !milestonesHit.h10k) {
+    milestonesHit.h10k = true;
+    if (window.GK) GK.achievement('h10k', 'Stratosphere', 'Reach 10000');
+  }
 }
 
 /* ---- Loop ---- */
@@ -714,7 +812,8 @@ function startGame() {
   resize();
   score = 0; lives = START_LIVES; streak = 0; multiplier = 1;
   invuln = 0; boost = 0; maxClimb = 0; rotSpawnTimer = 60;
-  platforms = []; spores = []; rots = []; particles = [];
+  jetpackTimer = 0; milestonesHit = {};           // v0.0.5
+  platforms = []; spores = []; rots = []; particles = []; jetpacks = [];  // v0.0.5
   player.x = W / 2 - player.w / 2;
   player.y = H - 110;
   startPlayerY = player.y;
@@ -797,3 +896,8 @@ updateLivesDisplay();
 requestAnimationFrame(loop);
 
 })();
+// ---- v0.0.4 gamekit wiring ----
+if (window.GK) {
+  GK.help({ title: "Spore Sprint", objective: "Climb upward by hopping between platforms. Avoid rots and reach new heights.", controls: ["Touch: tilt or drag to steer","Arrows / A,D: move horizontally","Auto-hops on landing","P: pause","F: fullscreen"], tips: "Spring platforms launch you higher." });
+  GK.exposeState(function () { try { return { score: (window.S && window.S.score) || window.score || 0, mode: (window.S && window.S.mode) || 'play', wave: (window.S && window.S.wave) || 0 }; } catch (e) { return {}; } });
+}

@@ -2,10 +2,10 @@
 
 > یک platformer عمودی auto-hop در جنگل قارچ در غروب — فیزیک پرش خودکار، collision یک‌طرفه، دوربین scroll.
 
-[![Version](https://img.shields.io/badge/version-v0.0.3-blue)](https://github.com/andrbi107/spore-sprint/releases/tag/v0.0.3) [![PWA](https://img.shields.io/badge/PWA-installable-purple)](https://andrbi107.github.io/spore-sprint/) [![No deps](https://img.shields.io/badge/dependencies-none-success)](https://github.com/andrbi107/spore-sprint) [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
+[![Version](https://img.shields.io/badge/version-v0.0.4-blue)](https://github.com/andrbi107/spore-sprint/releases/tag/v0.0.4) [![PWA](https://img.shields.io/badge/PWA-installable-purple)](https://andrbi107.github.io/spore-sprint/) [![deps](https://img.shields.io/badge/deps-Howler.js_local-blueviolet)](https://github.com/andrbi107/spore-sprint) [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
 
 🎮 **[بازی کن](https://andrbi107.github.io/spore-sprint/)** — نسخه‌ی آنلاین روی GitHub Pages
-📦 **[مخزن گیت‌هاب](https://github.com/andrbi107/spore-sprint)** · 🏷️ **[Release v0.0.3](https://github.com/andrbi107/spore-sprint/releases/tag/v0.0.3)**
+📦 **[مخزن گیت‌هاب](https://github.com/andrbi107/spore-sprint)** · 🏷️ **[Release v0.0.4](https://github.com/andrbi107/spore-sprint/releases/tag/v0.0.4)**
 
 ---
 
@@ -17,7 +17,15 @@
 
 ---
 
-## تغییرات v0.0.3 (جدید)
+## تغییرات v0.0.4 (جدید)
+
+powerup **Jetpack** (۳s رانش رو‌به‌بالا) + دستاوردهای Climber / Skywalker / Stratosphere.
+
+**همه‌ی بازی‌ها (v0.0.4)** — `gamekit.js` مشترک + `vendor/howler.min.js` محلی: صدای Howler با SFX خودکار (pickup/collision/game-over از طریق پل MUX)، صفحه‌ی **راهنما**، صفحه‌ی **تنظیمات** (قطع/وصل صدا)، قلاب‌های تست (`render_game_to_text`/`advanceTime`)، **فول‌اسکرین** (کلید F)، و سیستم **دستاوردها**. cache سرویس‌ورکر به v4 ارتقا یافت (آفلاین کامل با vendor).
+
+---
+
+## تغییرات v0.0.3
 
 **Spore Sprint** — فاصله‌ی سکوها بر اساس میزان پرش کاراکتر تنظیم شد (gap < ارتفاع پرش + محدودیت افقی)؛ همه‌ی سکوها حالا قابل‌دسترسی‌اند.
 
