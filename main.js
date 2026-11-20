@@ -22,8 +22,8 @@ const FRICTION_ICY = 0.985;   // v0.0.2 — ice platform friction (slippery)
 const PLAYER_W     = 32;
 const PLAYER_H     = 36;
 const PLATFORM_H   = 14;
-const BASE_MIN_GAP = 78;
-const BASE_MAX_GAP = 116;
+const BASE_MIN_GAP = 70;
+const BASE_MAX_GAP = 88;    // v0.0.3 — kept under max jump height (~134) with margin
 const STREAK_GOAL  = 5;
 const BOOST_FRAMES = 90;     // ~1.5s speed boost
 const INVULN_FRAMES = 90;
@@ -123,9 +123,10 @@ function initBackground() {
 /* ---- Platform / spore / rot generation ---- */
 function gapForAltitude() {
   const a = maxClimb / 1000;
-  const minG = BASE_MIN_GAP + Math.min(46, a * 9);
-  const maxG = BASE_MAX_GAP + Math.min(70, a * 13);
-  return minG + Math.random() * (maxG - minG);
+  // v0.0.3 — cap gaps well under the max jump height (JUMP_V^2 / 2G ≈ 134)
+  const minG = BASE_MIN_GAP + Math.min(12, a * 3);
+  const maxG = Math.min(100, BASE_MAX_GAP + Math.min(12, a * 3));
+  return minG + Math.random() * Math.max(8, maxG - minG);
 }
 function pickType() {
   const r = Math.random();
@@ -145,7 +146,12 @@ function ensurePlatforms() {
     const gap = gapForAltitude();
     const ny = highestPY - gap;
     const pw = 58 + Math.random() * 54;
-    const px = Math.random() * Math.max(1, W - pw);
+    // v0.0.3 — constrain horizontal offset so the next platform is reachable in one bounce
+    const prev = platforms.length ? platforms[platforms.length - 1] : null;
+    const prevCx = prev ? (prev.x + prev.w / 2) : (W / 2);
+    const maxDX = 130;   // reachable horizontal drift during a bounce arc
+    let px = prevCx - pw / 2 + (Math.random() * 2 - 1) * maxDX;
+    px = Math.max(0, Math.min(Math.max(1, W - pw), px));
     const type = pickType();
     const p = makePlatform(px, ny, pw, type);
     platforms.push(p);
