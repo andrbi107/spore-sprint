@@ -896,8 +896,11 @@ updateLivesDisplay();
 requestAnimationFrame(loop);
 
 })();
-// ---- v0.0.4 gamekit wiring ----
+// ---- v0.0.5 gamekit wiring (splash + menu + stats + leaderboard + auto-update) ----
 if (window.GK) {
-  GK.help({ title: "Spore Sprint", objective: "Climb upward by hopping between platforms. Avoid rots and reach new heights.", controls: ["Touch: tilt or drag to steer","Arrows / A,D: move horizontally","Auto-hops on landing","P: pause","F: fullscreen"], tips: "Spring platforms launch you higher." });
+  GK.boot({ title: "Spore Sprint", tagline: "Vertical platform climb", theme: "#0c1408" });
+  GK.help({ title: "Spore Sprint", objective: "Climb upward by hopping between platforms. Avoid rots and reach new heights.", controls: ["Touch: tilt or drag to steer","Arrows / A,D: move horizontally","Auto-hops on landing","P: pause","F: fullscreen"], tips: "Spring platforms launch you higher; Jetpack gives a boost." });
   GK.exposeState(function () { try { return { score: (window.S && window.S.score) || window.score || 0, mode: (window.S && window.S.mode) || 'play', wave: (window.S && window.S.wave) || 0 }; } catch (e) { return {}; } });
+  GK._manualRecord = false;
+  setTimeout(function () { GK.ready(); }, 600);
 }
